@@ -5,6 +5,7 @@ class TokenException(Exception):
     REQUEST_ERR = 3
     TWOFA_REQ = 4
     TWOFA_ERR = 5
+    CAPTCHA_REQ = 6
 
     @property
     def extra(self):
@@ -37,3 +38,6 @@ class TokenException(Exception):
         elif code == TokenException.TWOFA_ERR:
             super(TokenException, self).__init__(
                 "2FA Error. Code: {0}. Error extra: {1}".format(code, extrastr))
+        elif code == TokenException.CAPTCHA_REQ:
+            super(TokenException, self).__init__(
+                "Captcha needed. Code: {0}. Error extra: {1}".format(code, extrastr))

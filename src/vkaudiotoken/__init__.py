@@ -12,7 +12,7 @@ from .VkClient import VkClient
 from . import supported_clients
 
 
-def get_kate_token(login, password, auth_code='GET_CODE', non_refreshed_token=None):
+def get_kate_token(login, password, auth_code='GET_CODE', captcha_sid=None, captcha_key=None, non_refreshed_token=None):
     params = CommonParams(supported_clients.KATE.user_agent)
     protobuf_helper = SmallProtobufHelper()
 
@@ -22,13 +22,13 @@ def get_kate_token(login, password, auth_code='GET_CODE', non_refreshed_token=No
     mtalkClient = MTalkClient(auth_data, protobuf_helper)
     mtalkClient.send_request()
 
-    receiver = TokenReceiver(login, password, auth_data, params, auth_code)
+    receiver = TokenReceiver(login, password, auth_data, params, auth_code, captcha_sid, captcha_key)
     return {'token': receiver.get_token(non_refreshed_token), 'user_agent': supported_clients.KATE.user_agent}
 
 
-def get_vk_official_token(login, password, auth_code='GET_CODE'):
+def get_vk_official_token(login, password, auth_code='GET_CODE', captcha_sid=None, captcha_key=None):
     params = CommonParams(supported_clients.VK_OFFICIAL.user_agent)
-    receiver = TokenReceiverOfficial(login, password, params, auth_code)
+    receiver = TokenReceiverOfficial(login, password, params, auth_code, captcha_sid, captcha_key)
 
     return {
         'token': receiver.get_token()['access_token'],

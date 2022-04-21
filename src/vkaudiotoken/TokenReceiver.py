@@ -4,12 +4,14 @@ import requests
 
 
 class TokenReceiver:
-    def __init__(self, login, password, auth_data, params, auth_code=None, scope='audio,offline'):
+    def __init__(self, login, password, auth_data, params, auth_code=None, captcha_sid=None, captcha_key=None, scope='audio,offline'):
         self._params = params
         self._login = login
         self._password = password
         self._auth_code = auth_code
         self._auth_data = auth_data
+        self._captcha_sid = captcha_sid
+        self._captcha_key = captcha_key
         self._scope = scope
         self._client = KATE
 
@@ -61,17 +63,21 @@ class TokenReceiver:
         self._params.set_common_vk(session)
         dec = session.get('https://oauth.vk.com/token',
                           params=[
-                                     ('grant_type', 'password'),
-                                     ('client_id', self._client.client_id),
-                                     ('client_secret', self._client.client_secret),
-                                     ('username', self._login),
-                                     ('password', self._password),
-                                     ('v', '5.95'),
-                                     ('lang', 'en'),
-                                     ('scope', self._scope)
-                                 ] + self._params.get_two_factor_part(self._auth_code)).json()
-        if 'error' in dec and dec['error'] == 'need_validation':
-            raise TokenException(TokenException.TWOFA_REQ, dec)
+                                    ('grant_type', 'password'),
+                                    ('client_id', self._client.client_id),
+                                    ('client_secret', self._client.client_secret),
+                                    ('username', self._login),
+                                    ('password', self._password),
+                                    ('v', '5.95'),
+                                    ('lang', 'en'),
+                                    ('scope', self._scope)
+                                ] + self._params.get_two_factor_part(self._auth_code) 
+                                + self._params.get_captcha(self._captcha_sid, self._captcha_key)).json()
+        if 'error' in dec:
+            if dec['error'] == 'need_validation':
+                raise TokenException(TokenException.TWOFA_REQ, dec)
+            if dec['error'] == 'need_captcha':
+                raise TokenException(TokenException.CAPTCHA_REQ, dec)
         if 'user_id' not in dec:
             raise TokenException(TokenException.TOKEN_NOT_RECEIVED, dec)
         return dec['access_token']

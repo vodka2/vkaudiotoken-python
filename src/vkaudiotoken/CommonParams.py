@@ -22,6 +22,14 @@ class CommonParams:
                    ('force_sms', 1)
                ] + [] if code == 'GET_CODE' else [('code', code)]
 
+    def get_captcha(self, captcha_sid=None, captcha_key=None):
+        if captcha_sid is None or captcha_key is None:
+            return []
+        return [
+                   ('captcha_sid', captcha_sid),
+                   ('captcha_key', captcha_key)
+               ]
+
     def generate_random_string(self, length, characters):
         return ''.join(random.choice(characters) for _ in range(length))
 
